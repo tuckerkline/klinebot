@@ -2,7 +2,7 @@ const Botkit = require('botkit')
 const os = require('os')
 const controller = Botkit.slackbot()
 const bot = controller.spawn({
-  token: 'xoxb-38286568357-l3ial26JiRVgiFJX7ORarIZV'
+  token: ''
 })
 
 bot.startRTM(function(err,bot,payload){
@@ -183,8 +183,27 @@ controller.hears(['dm me'],['direct_message','direct_mention'],function(bot,mess
   bot.startPrivateConversation(message,function(err,dm) {
     dm.say('Private reply!');
   });
-
 });
+
+controller.hears(["lets play a game"], ['direct_message', 'direct_mention','mention'], function(bot,message) {
+  bot.startConversation(message, askPosition)
+});
+
+askPosition = function(response, convo) {
+  convo.ask("Tic Tac Toe. You're X. Tell me a position, tl, tc, tr, ml, mc, mr, bl, bc or bl", function(response, convo) {
+    convo.say("x|-|-\n-|-|-\n-|-|-")
+    askNext(response, convo)
+    convo.next()
+  })
+}
+
+askNext = function(response, convo) {
+  convo.ask("", function(response, convo) {
+    convo.say('thanks!')
+    convo.next()
+  })
+}
+
 
 controller.hears(["help"],['direct_message','direct_mention','mention'],function(bot,message) {
     bot.reply(message,"I'm a simple bot created by Tucker for the purposes of testing bot integrations in the klinefamily+ channel. Right now all I can really do is remember your name if you tell it to me (until my server restarts that is :no_mouth:!)");
