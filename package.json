@@ -1,0 +1,23 @@
+{
+  "name": "klinebot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "bot.js",
+  "dependencies": {
+    "botkit": "^0.1.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tuckerkline/klinebot.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tuckerkline/klinebot/issues"
+  },
+  "homepage": "https://github.com/tuckerkline/klinebot#readme"
+}

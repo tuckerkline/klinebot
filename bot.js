@@ -2,7 +2,7 @@ const Botkit = require('botkit')
 const os = require('os')
 const controller = Botkit.slackbot()
 const bot = controller.spawn({
-  token: ''
+  token: 'xoxb-38286568357-W3iVoP4rCM7mcEXL5BVzrzJ2'
 })
 
 bot.startRTM(function(err,bot,payload){
