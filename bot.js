@@ -2,7 +2,7 @@ const Botkit = require('botkit')
 const os = require('os')
 const controller = Botkit.slackbot()
 const bot = controller.spawn({
-  token: 'xoxb-38286568357-W3iVoP4rCM7mcEXL5BVzrzJ2'
+  token: ''
 })
 
 bot.startRTM(function(err,bot,payload){
@@ -21,7 +21,7 @@ controller.hears(['hello', 'hi'], 'direct_message,direct_mention,mention', funct
         if (err) {
             bot.botkit.log('Failed to add emoji reaction :(', err);
         }
-    });
+    })
 
 
     controller.storage.users.get(message.user, function(err, user) {
@@ -116,35 +116,6 @@ controller.hears(['what is my name', 'who am i'], 'direct_message,direct_mention
     });
 });
 
-
-controller.hears(['shutdown'], 'direct_message,direct_mention,mention', function(bot, message) {
-
-    bot.startConversation(message, function(err, convo) {
-
-        convo.ask('Are you sure you want me to shutdown?', [
-            {
-                pattern: bot.utterances.yes,
-                callback: function(response, convo) {
-                    convo.say('Bye!');
-                    convo.next();
-                    setTimeout(function() {
-                        process.exit();
-                    }, 3000);
-                }
-            },
-        {
-            pattern: bot.utterances.no,
-            default: true,
-            callback: function(response, convo) {
-                convo.say('*Phew!*');
-                convo.next();
-            }
-        }
-        ]);
-    });
-});
-
-
 controller.hears(['uptime', 'identify yourself', 'who are you', 'what is your name'],
     'direct_message,direct_mention,mention', function(bot, message) {
 
@@ -175,35 +146,33 @@ function formatUptime(uptime) {
     return uptime;
 }
 
-controller.hears(['dm me'],['direct_message','direct_mention'],function(bot,message) {
-  bot.startConversation(message,function(err,convo) {
-    convo.say('Heard ya');
-  });
+controller.hears(['lets play a game'], ['direct_message','direct_mention','mention'], function(bot,message) {
+    zorkStart = function(response, convo) {
+      convo.ask('Welcome to ZORK! Are you ready to play?', function(response, convo) {
+        console.log("Response@@@@@", response)
+        switch (response.text) {
+          case 'yes':
+            bot.api.reactions.add({
+                timestamp: response.ts,
+                channel: response.channel,
+                name: 'whale2',
+            }, function(err, res) {
+                if (err) {
+                    bot.botkit.log('Failed to add emoji reaction :(', err);
+                }
+            })
+            convo.say("West of House This is an open field west of a white house, with a boarded front door. There is a small mailbox here. A rubber mat saying \'Welcome to Zork!\' lies by the door.")
+            break
+          case 'no':
+            convo.say('okay, go away now.')
+            break
+        }
+        convo.next();
+      });
+    }
 
-  bot.startPrivateConversation(message,function(err,dm) {
-    dm.say('Private reply!');
-  });
+    bot.startConversation(message, zorkStart);
 });
-
-controller.hears(["lets play a game"], ['direct_message', 'direct_mention','mention'], function(bot,message) {
-  bot.startConversation(message, askPosition)
-});
-
-askPosition = function(response, convo) {
-  convo.ask("Tic Tac Toe. You're X. Tell me a position, tl, tc, tr, ml, mc, mr, bl, bc or bl", function(response, convo) {
-    convo.say("x|-|-\n-|-|-\n-|-|-")
-    askNext(response, convo)
-    convo.next()
-  })
-}
-
-askNext = function(response, convo) {
-  convo.ask("", function(response, convo) {
-    convo.say('thanks!')
-    convo.next()
-  })
-}
-
 
 controller.hears(["help"],['direct_message','direct_mention','mention'],function(bot,message) {
     bot.reply(message,"I'm a simple bot created by Tucker for the purposes of testing bot integrations in the klinefamily+ channel. Right now all I can really do is remember your name if you tell it to me (until my server restarts that is :no_mouth:!)");
