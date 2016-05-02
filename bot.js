@@ -1,8 +1,16 @@
 const Botkit = require('botkit')
 const os = require('os')
-const controller = Botkit.slackbot()
+var controller = Botkit.slackbot({
+  json_file_store: 'path_to_json_database'
+});
 const bot = controller.spawn({
   token: ''
+})
+
+controller.hears(['hello', 'hi'], 'direct_message,direct_mention,mention', function(bot, message) {
+  controller.storage.users.save({id: message.user, inventory:[]}, function(err) {
+    console.log("ERROR: ", err)
+  })
 })
 
 bot.startRTM(function(err,bot,payload){
@@ -33,11 +41,12 @@ controller.hears(['hello', 'hi'], 'direct_message,direct_mention,mention', funct
     });
 });
 
+
 controller.hears(['call me (.*)', 'my name is (.*)'], 'direct_message,direct_mention,mention', function(bot, message) {
     var name = message.match[1];
     controller.storage.users.get(message.user, function(err, user) {
         if (!user) {
-            user = {
+          user = {
                 id: message.user,
             };
         }
@@ -146,22 +155,45 @@ function formatUptime(uptime) {
     return uptime;
 }
 
+var inventory = []
+
+var addReaction = function(response) {
+  for (var i = 0; i < inventory.length; i++ ) {
+    var user = controller.storage.users.get(id, function(err, user_data) {console.log('error: ', err)});
+    console.log("CONTROLLER.STORAGE.users: ", user)
+    bot.api.reactions.add({
+        timestamp: response.ts,
+        channel: response.channel,
+        name: inventory[i],
+    }, function(err, res) {
+        if (err) {
+            bot.botkit.log('Failed to add emoji reaction :(', err);
+        }
+    })
+  }
+}
+
 controller.hears(['lets play a game'], ['direct_message','direct_mention','mention'], function(bot,message) {
     zorkStart = function(response, convo) {
       convo.ask('Welcome to ZORK! Are you ready to play?', function(response, convo) {
-        console.log("Response@@@@@", response)
+        console.log("Response: ", response)
         switch (response.text) {
           case 'yes':
             bot.api.reactions.add({
                 timestamp: response.ts,
                 channel: response.channel,
-                name: 'whale2',
+                name: 'house',
             }, function(err, res) {
                 if (err) {
                     bot.botkit.log('Failed to add emoji reaction :(', err);
                 }
             })
             convo.say("West of House This is an open field west of a white house, with a boarded front door. There is a small mailbox here. A rubber mat saying \'Welcome to Zork!\' lies by the door.")
+            inventory.push('gun')
+            addReaction(response)
+            console.log('inventory', inventory)
+            askDirection(response, convo)
+            convo.next()
             break
           case 'no':
             convo.say('okay, go away now.')
@@ -169,6 +201,29 @@ controller.hears(['lets play a game'], ['direct_message','direct_mention','menti
         }
         convo.next();
       });
+    }
+    askDirection = function(response, convo) {
+      convo.ask('Which direction? East or West?', function(response, convo) {
+        switch (response.text) {
+          case 'east':
+            convo.say('The door is locked, and there is evidently no key.')
+            askDirection(response, convo)
+            break
+          case 'west':
+          bot.api.reactions.add({
+              timestamp: response.ts,
+              channel: response.channel,
+              name: 'evergreen_tree',
+          }, function(err, res) {
+              if (err) {
+                  bot.botkit.log('Failed to add emoji reaction :(', err);
+              }
+          })
+            convo.say('*Forest:* This is a forest, with trees in all directions around you.')
+            break
+        }
+        convo.next()
+      })
     }
 
     bot.startConversation(message, zorkStart);
